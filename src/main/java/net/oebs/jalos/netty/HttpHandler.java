@@ -1,19 +1,36 @@
-
 package net.oebs.jalos.netty;
 
+import com.sleepycat.persist.EntityStore;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
+import io.netty.handler.codec.http.HttpHeaders.Values;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
-import static io.netty.handler.codec.http.HttpHeaders.Values;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.SEE_OTHER;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import java.util.List;
+import net.oebs.jalos.handler.SubmitHandler;
 
-public class HttpHandler extends ChannelInboundHandlerAdapter {
+public class HttpHandler extends SimpleChannelInboundHandler {
+
+    EntityStore db;
+
+    public HttpHandler(EntityStore db) {
+        this.db = db;
+    }
 
     private FullHttpResponse seeOther(String destinationUrl) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, SEE_OTHER);
@@ -21,27 +38,47 @@ public class HttpHandler extends ChannelInboundHandlerAdapter {
         return response;
     }
 
-    private FullHttpResponse handleSubmit(HttpRequest request) {
+    private FullHttpResponse notFound() {
+        return new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
+    }
+
+    private FullHttpResponse badRequest() {
+        return new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST);
+    }
+
+    private FullHttpResponse handleSubmit(FullHttpRequest request) {
         FullHttpResponse response = null;
+        HttpMethod method = request.getMethod();
+        if (method.equals(HttpMethod.POST)) {
+            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+            List<InterfaceHttpData> params = decoder.getBodyHttpDatas();
+            response = new SubmitHandler(db, params).getResponse();
+        } else if (method.equals(HttpMethod.GET)) {
+            response = badRequest();
+        }
+
         return response;
     }
 
     private FullHttpResponse handleRequest(HttpRequest request) {
 
-        FullHttpResponse response;
+        FullHttpResponse response = null;
         String uri = request.getUri();
 
         if (uri.compareTo("/a/submit") == 0) {
-            response = handleSubmit(request);
-//        } else if (uri.compareTo("/status") == 0) {
+            if (request instanceof FullHttpRequest) {
+                response = handleSubmit((FullHttpRequest) request);
+            }
+        } else if (uri.startsWith("/a/")) {
+        } else if (uri.compareTo("/status") == 0) {
         } else {
-            response = seeOther("http://google.com/");
+            response = notFound();
         }
         return response;
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
         if (!(msg instanceof HttpRequest)) {
             return;
         }

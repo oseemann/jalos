@@ -1,39 +1,45 @@
 package net.oebs.jalos;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import net.oebs.jalos.netty.HttpInitializer;
+import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.Environment;
+import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.persist.EntityStore;
+import com.sleepycat.persist.StoreConfig;
+import java.io.File;
+import net.oebs.jalos.netty.HttpServer;
 
 public final class JalosMain {
 
     static final int PORT = 8080;
 
-    private static void runNetty() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private static EntityStore setupDatabase() {
+        Environment myEnv;
+        EntityStore store = null;
+
         try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.option(ChannelOption.SO_BACKLOG, 8192);
-            b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpInitializer());
-            Channel ch = b.bind(PORT).sync().channel();
-            System.err.println("Listening at http://127.0.0.1:" + PORT + '/');
-            ch.closeFuture().sync();
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
+            EnvironmentConfig myEnvConfig = new EnvironmentConfig();
+            StoreConfig storeConfig = new StoreConfig();
+
+            myEnvConfig.setAllowCreate(true);
+            storeConfig.setAllowCreate(true);
+
+            // Open the environment and entity store
+            myEnv = new Environment(new File("/tmp/jalos.db"), myEnvConfig);
+            store = new EntityStore(myEnv, "EntityStore", storeConfig);
+        } catch (DatabaseException dbe) {
+            System.err.println("Error opening environment and store: "
+                    + dbe.toString());
+            System.exit(-1);
         }
+
+        return store;
     }
 
     public static void main(String[] args) throws Exception {
-        runNetty();
+        EntityStore db = setupDatabase();
+        HttpServer server = new HttpServer(db, PORT);
+        server.run();
+        db.close();
+        //close env
     }
 }
