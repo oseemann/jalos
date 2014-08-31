@@ -10,43 +10,46 @@ import com.sleepycat.persist.EntityStore;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.StoreConfig;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.oebs.jalos.handler.SubmitHandler;
+import net.oebs.jalos.db.errors.BackendError;
+import net.oebs.jalos.db.errors.InitFailed;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class BdbBackend implements Backend {
 
     Environment env;
     EntityStore store;
 
-    private final String idSequenceName = "idSeq";
+    private static final String idSequenceName = "idSeq";
+    private static final Logger logger = LogManager.getLogger("HelloWorld");
 
-    public BdbBackend() {
+    public BdbBackend() throws BackendError {
         try {
             init();
-        } catch (DatabaseException dbe) {
-            System.err.println("Error opening environment and store: "
-                    + dbe.toString());
-            System.exit(-1);
+        } catch (DatabaseException e) {
+            logger.fatal("Failed to initialize BDB: {}", e.toString());
+            throw new InitFailed();
         }
     }
 
     @Override
-    public void store(Url url) {
+    public Url store(Url url) throws BackendError {
         try {
             put(url);
-        } catch (DatabaseException ex) {
-            Logger.getLogger(SubmitHandler.class.getName()).log(Level.SEVERE, null, ex);
+            return url;
+        } catch (DatabaseException e) {
+            logger.error("Failed to store url `{}`: {}", url.getUrl(), e);
+            throw new InternalError();
         }
     }
 
     @Override
-    public Url lookup(Long id) {
+    public Url lookup(Long id) throws BackendError {
         Url url = null;
         try {
             url = retrieve(id);
-        } catch (DatabaseException ex) {
-            Logger.getLogger(SubmitHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DatabaseException e) {
+            logger.error("Failed to lookup id `{}`: {}", id, e);
         }
         return url;
     }
@@ -56,8 +59,8 @@ public class BdbBackend implements Backend {
         try {
             store.close();
             env.close();
-        } catch (DatabaseException ex) {
-            Logger.getLogger(BdbBackend.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DatabaseException e) {
+            logger.error("Failed to shutdown bdb: {}", e);
         }
     }
 
@@ -88,7 +91,9 @@ public class BdbBackend implements Backend {
         Transaction txn = env.beginTransaction(null, null);
         long id = sequence.get(txn, 1);
         url.setId(id);
-        idx.put(txn, url);
+        Object result = idx.put(txn, url);
+        // Currently we only insert, not update. Should always be null;
+        assert (result == null);
         txn.commitSync();
     }
 
