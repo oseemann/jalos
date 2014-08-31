@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
 
-public class SubmitHandler {
+public class SubmitHandler implements Handler {
 
     SubmitResponseObject sro = null;
     static long c = 1000;
@@ -32,6 +32,7 @@ public class SubmitHandler {
         sro.url = "https://oebs.net/a/" + sro.id;
     }
 
+    @Override
     public FullHttpResponse getResponse() {
         ObjectMapper mapper = new ObjectMapper();
         String json;

@@ -36,6 +36,27 @@ public class BdbBackend implements Backend {
         }
     }
 
+    @Override
+    public Url lookup(Long id) {
+        Url url = null;
+        try {
+            url = retrieve(id);
+        } catch (DatabaseException ex) {
+            Logger.getLogger(SubmitHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return url;
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            store.close();
+            env.close();
+        } catch (DatabaseException ex) {
+            Logger.getLogger(BdbBackend.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void init() throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
         StoreConfig storeConfig = new StoreConfig();
@@ -58,17 +79,8 @@ public class BdbBackend implements Backend {
         txn.commitSync();
     }
 
-    @Override
-    public void lookup() {
-    }
-
-    @Override
-    public void shutdown() {
-        try {
-            store.close();
-            env.close();
-        } catch (DatabaseException ex) {
-            Logger.getLogger(BdbBackend.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    private Url retrieve(Long id) throws DatabaseException {
+        PrimaryIndex<Long, Url> idx = store.getPrimaryIndex(Long.class, Url.class);
+        return idx.get(id);
     }
 }

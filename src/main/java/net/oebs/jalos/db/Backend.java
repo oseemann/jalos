@@ -6,5 +6,5 @@ public interface Backend {
 
     public void store(Url url);
 
-    public void lookup();
+    public Url lookup(Long id);
 }
