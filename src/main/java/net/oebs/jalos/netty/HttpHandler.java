@@ -1,6 +1,5 @@
 package net.oebs.jalos.netty;
 
-import com.sleepycat.persist.EntityStore;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,13 +21,14 @@ import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import java.util.List;
+import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.handler.SubmitHandler;
 
 public class HttpHandler extends SimpleChannelInboundHandler {
 
-    EntityStore db;
+    Backend db;
 
-    public HttpHandler(EntityStore db) {
+    public HttpHandler(Backend db) {
         this.db = db;
     }
 

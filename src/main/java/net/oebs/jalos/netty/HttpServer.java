@@ -1,6 +1,5 @@
 package net.oebs.jalos.netty;
 
-import com.sleepycat.persist.EntityStore;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -9,13 +8,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import net.oebs.jalos.db.Backend;
 
 public class HttpServer {
 
-    EntityStore db;
+    Backend db;
     Integer port;
 
-    public HttpServer(EntityStore db, int port) {
+    public HttpServer(Backend db, int port) {
         this.db = db;
         this.port = port;
     }

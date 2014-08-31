@@ -1,18 +1,18 @@
 package net.oebs.jalos.netty;
 
-import com.sleepycat.persist.EntityStore;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import net.oebs.jalos.db.Backend;
 
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
-    EntityStore db;
+    Backend db;
 
-    public HttpInitializer(EntityStore db) {
+    public HttpInitializer(Backend db) {
         this.db = db;
     }
 

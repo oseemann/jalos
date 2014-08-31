@@ -2,9 +2,6 @@ package net.oebs.jalos.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.persist.EntityStore;
-import com.sleepycat.persist.PrimaryIndex;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -15,6 +12,7 @@ import io.netty.util.CharsetUtil;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
 
 public class SubmitHandler {
@@ -22,20 +20,12 @@ public class SubmitHandler {
     SubmitResponseObject sro = null;
     static long c = 1000;
 
-    public SubmitHandler(EntityStore db, List<InterfaceHttpData> params) {
+    public SubmitHandler(Backend db, List<InterfaceHttpData> params) {
         SubmitArgs args = readParams(params);
         Url url = new Url();
         url.setId(c++);
         url.setUrl(args.getUrl());
-        try {
-
-            PrimaryIndex<Long, Url> idx = db.getPrimaryIndex(Long.class, Url.class);
-            idx.put(url);
-            db.sync();
-            db.getEnvironment().sync();
-        } catch (DatabaseException ex) {
-            Logger.getLogger(SubmitHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        db.store(url);
         sro = new SubmitResponseObject();
         sro.id = url.getId().toString();
         sro.target = url.getUrl();
