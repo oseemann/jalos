@@ -18,12 +18,10 @@ import net.oebs.jalos.db.Url;
 public class SubmitHandler implements Handler {
 
     SubmitResponseObject sro = null;
-    static long c = 1000;
 
     public SubmitHandler(Backend db, List<InterfaceHttpData> params) {
         SubmitArgs args = readParams(params);
         Url url = new Url();
-        url.setId(c++);
         url.setUrl(args.getUrl());
         db.store(url);
         sro = new SubmitResponseObject();
