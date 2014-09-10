@@ -1,6 +1,6 @@
 package net.oebs.jalos;
 
-import errors.SettingsError;
+import net.oebs.jalos.errors.SettingsError;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package errors;
+package net.oebs.jalos.errors;
 
 public class SettingsError extends Exception {
 

@@ -1,6 +1,6 @@
 package net.oebs.jalos;
 
-import errors.SettingsError;
+import net.oebs.jalos.errors.SettingsError;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.BdbBackend;
 import net.oebs.jalos.netty.HttpServer;
