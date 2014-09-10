@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SubmitHandler implements Handler {
 
-    SubmitResponseObject sro = null;
+    private final SubmitResponseObject sro;
     private static final Logger logger = LogManager.getLogger(SubmitHandler.class.getName());
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";

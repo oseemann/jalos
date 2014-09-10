@@ -8,16 +8,23 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HttpServer {
 
-    Backend db;
-    Integer port;
+    private final Backend db;
+    private final Integer port;
+    private final String host;
 
-    public HttpServer(Backend db, int port) {
+    static final Logger log = LogManager.getLogger();
+
+    public HttpServer(Backend db, Settings settings) {
         this.db = db;
-        this.port = port;
+        this.port = settings.getHttpPort();
+        this.host = settings.getHttpHost();
     }
 
     public void run() throws Exception {
@@ -30,8 +37,8 @@ public class HttpServer {
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new HttpInitializer(db));
-            Channel ch = b.bind(port).sync().channel();
-            System.err.println("Listening at http://127.0.0.1:" + port + '/');
+            Channel ch = b.bind(host, port).sync().channel();
+            log.info("Listening at http://%s:%d/", host, port);
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();

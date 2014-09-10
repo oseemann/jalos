@@ -10,6 +10,7 @@ import com.sleepycat.persist.EntityStore;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.StoreConfig;
 import java.io.File;
+import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.errors.BackendError;
 import net.oebs.jalos.db.errors.InitFailed;
 import org.apache.logging.log4j.LogManager;
@@ -21,13 +22,13 @@ public class BdbBackend implements Backend {
     EntityStore store;
 
     private static final String idSequenceName = "idSeq";
-    private static final Logger logger = LogManager.getLogger("HelloWorld");
+    private static final Logger log = LogManager.getLogger();
 
-    public BdbBackend() throws BackendError {
+    public BdbBackend(Settings settings) throws BackendError {
         try {
-            init();
+            init(settings);
         } catch (DatabaseException e) {
-            logger.fatal("Failed to initialize BDB: {}", e.toString());
+            log.fatal("Failed to initialize BDB: {}", e.toString());
             throw new InitFailed();
         }
     }
@@ -38,7 +39,7 @@ public class BdbBackend implements Backend {
             put(url);
             return url;
         } catch (DatabaseException e) {
-            logger.error("Failed to store url `{}`: {}", url.getUrl(), e);
+            log.error("Failed to store url `{}`: {}", url.getUrl(), e);
             throw new InternalError();
         }
     }
@@ -49,7 +50,7 @@ public class BdbBackend implements Backend {
         try {
             url = retrieve(id);
         } catch (DatabaseException e) {
-            logger.error("Failed to lookup id `{}`: {}", id, e);
+            log.error("Failed to lookup id `{}`: {}", id, e);
         }
         return url;
     }
@@ -60,11 +61,11 @@ public class BdbBackend implements Backend {
             store.close();
             env.close();
         } catch (DatabaseException e) {
-            logger.error("Failed to shutdown bdb: {}", e);
+            log.error("Failed to shutdown bdb: {}", e);
         }
     }
 
-    private void init() throws DatabaseException {
+    private void init(Settings settings) throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
         StoreConfig storeConfig = new StoreConfig();
 
@@ -75,7 +76,7 @@ public class BdbBackend implements Backend {
         storeConfig.setDeferredWrite(false);
         storeConfig.setTransactional(true);
 
-        env = new Environment(new File("/tmp/jalos.db"), envConfig);
+        env = new Environment(new File(settings.getDbLocation()), envConfig);
         store = new EntityStore(env, "EntityStore", storeConfig);
 
         SequenceConfig seqConfig = new SequenceConfig();
