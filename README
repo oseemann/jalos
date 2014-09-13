@@ -1,0 +1,5 @@
+Jalos
+=====
+
+Jalos is a very simple url shortener service written with Netty as HTTP engine
+and BerkeleyDB as storage backend.
