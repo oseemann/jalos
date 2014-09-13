@@ -19,16 +19,20 @@
 package net.oebs.jalos.handler;
 
 import io.netty.handler.codec.http.FullHttpResponse;
+import static io.netty.handler.codec.http.HttpResponseStatus.SEE_OTHER;
 import net.oebs.jalos.db.Backend;
+import net.oebs.jalos.db.Url;
 import net.oebs.jalos.handler.errors.HandlerError;
 import net.oebs.jalos.handler.errors.NotFound;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class LookupHandlerTest {
 
@@ -54,10 +58,15 @@ public class LookupHandlerTest {
     @Test
     public void testGetResponseSuccess() throws Exception {
         Backend backend = mock(Backend.class);
+        Url url = new Url();
+        url.setUrl("http://www.example.org/test1");
+        when(backend.lookup(new Long(12345))).thenReturn(url);
         String uri = "/a/12345";
         LookupHandler instance = new LookupHandler(backend, uri);
-        FullHttpResponse result = instance.getResponse();
+        FullHttpResponse response = instance.getResponse();
         verify(backend).lookup(new Long(12345));
+        assertEquals(response.getStatus(), SEE_OTHER);
+        assertEquals(response.headers().get("Location"), url.getUrl());
     }
 
     @Test(expected = NotFound.class)
