@@ -39,7 +39,9 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.handler.LookupHandler;
 import net.oebs.jalos.handler.SubmitHandler;
@@ -72,12 +74,20 @@ public class HttpHandler extends SimpleChannelInboundHandler {
         return new DefaultFullHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR);
     }
 
+    private Map<String, String> httpDataToStringMap(List<InterfaceHttpData> params) {
+        Map<String, String> result = new HashMap<>();
+        for (InterfaceHttpData param : params) {
+            result.put(param.getName(), param.toString());
+        }
+        return result;
+    }
+
     private FullHttpResponse handleSubmit(FullHttpRequest request) {
         FullHttpResponse response;
         HttpMethod method = request.getMethod();
         if (method.equals(HttpMethod.POST)) {
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
-            List<InterfaceHttpData> params = decoder.getBodyHttpDatas();
+            Map<String, String> params = httpDataToStringMap(decoder.getBodyHttpDatas());
             response = new SubmitHandler(db, params).getResponse();
         } else if (method.equals(HttpMethod.GET)) {
             response = badRequest();

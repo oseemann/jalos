@@ -18,38 +18,46 @@
  */
 package net.oebs.jalos.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.FullHttpResponse;
-import static io.netty.handler.codec.http.HttpResponseStatus.SEE_OTHER;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import java.util.HashMap;
+import java.util.Map;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
-import net.oebs.jalos.handler.errors.HandlerError;
-import net.oebs.jalos.handler.errors.NotFound;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class LookupHandlerTest {
+public class SubmitHandlerTest {
 
     @Test
-    public void testGetResponseSuccess() throws Exception {
-        Backend backend = mock(Backend.class);
-        Long id = new Long(12345);
-        Url url = new Url("http://www.example.org/test1");
-        when(backend.lookup(id)).thenReturn(url);
+    public void testGetResponse() throws Exception {
+        String uri = "http://www.example.org/submittest1";
+        Long id = new Long(123);
+        Url u = new Url(uri, id);
+        Map<String, String> params = new HashMap<>();
+        params.put("url", uri);
 
-        LookupHandler handler = new LookupHandler(backend, "/a/12345");
+        Backend backend = mock(Backend.class);
+        when(backend.store(any(Url.class))).thenReturn(u);
+
+        SubmitHandler handler = new SubmitHandler(backend, params);
         FullHttpResponse response = handler.getResponse();
 
-        verify(backend).lookup(id);
-        assertEquals(response.getStatus(), SEE_OTHER);
-        assertEquals(response.headers().get("Location"), url.getUrl());
-    }
+        String json = new String(response.content().array());
+        ObjectMapper mapper = new ObjectMapper();
+        SubmitResponseObject sro = mapper.readValue(json, SubmitResponseObject.class);
 
-    @Test(expected = NotFound.class)
-    public void testGetResponseWithInvalidUrl() throws HandlerError {
-        new LookupHandler(mock(Backend.class), "/a/invalid");
+        verify(backend).store(any(Url.class));
+        assertEquals(response.getStatus(), OK);
+        assertEquals(sro.status, "SUCCESS");
+        assertEquals(sro.target, uri);
+        assertEquals(sro.id, id);
+        assertEquals(sro.url, "https://oebs.net/a/123");
     }
 
 }

@@ -29,8 +29,17 @@ public class Url {
 
     private String url;
 
+    public Url() {
+
+    }
+
     public Url(String url) {
         this.url = url;
+    }
+
+    public Url(String url, Long id) {
+        this.url = url;
+        this.id = id;
     }
 
     public void setId(Long id) {
