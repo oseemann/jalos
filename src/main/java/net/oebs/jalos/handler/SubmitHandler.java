@@ -43,8 +43,7 @@ public class SubmitHandler implements Handler {
 
     public SubmitHandler(Backend db, List<InterfaceHttpData> params) {
         SubmitArgs args = readParams(params);
-        Url url = new Url();
-        url.setUrl(args.getUrl());
+        Url url = new Url(args.getUrl());
         Url result = null;
         try {
             result = db.store(url);
