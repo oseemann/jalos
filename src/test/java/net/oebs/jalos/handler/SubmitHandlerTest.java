@@ -21,8 +21,10 @@ package net.oebs.jalos.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.FullHttpResponse;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +47,11 @@ public class SubmitHandlerTest {
         Backend backend = mock(Backend.class);
         when(backend.store(any(Url.class))).thenReturn(u);
 
-        SubmitHandler handler = new SubmitHandler(backend, params);
+        Settings settings = new Settings();
+        URL testUrl = new URL("http://w1.example.org/x1/");
+        settings.setHttpHostUrl(testUrl);
+
+        SubmitHandler handler = new SubmitHandler(settings, backend, params);
         FullHttpResponse response = handler.getResponse();
 
         String json = new String(response.content().array());
@@ -57,7 +63,7 @@ public class SubmitHandlerTest {
         assertEquals(sro.status, "SUCCESS");
         assertEquals(sro.target, uri);
         assertEquals(sro.id, id);
-        assertEquals(sro.url, "https://oebs.net/a/123");
+        assertEquals(sro.url.toString(), testUrl.toString() + id.toString());
     }
 
 }

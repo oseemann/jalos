@@ -22,6 +22,10 @@ import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.BdbBackend;
 import net.oebs.jalos.errors.SettingsError;
 import net.oebs.jalos.netty.HttpServer;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,9 +35,17 @@ public final class JalosMain {
     static final Logger log = LogManager.getLogger();
 
     public static void main(String[] args) throws Exception {
+        Options options = new Options();
+        options.addOption("c", "config", true, "config file path");
+
+        CommandLineParser parser = new BasicParser();
+        CommandLine cmd = parser.parse(options, args);
+
+        String configFile = options.getOption("c").getValue("jalos.properties");
         Settings settings = null;
+
         try {
-            settings = new Settings();
+            settings = new Settings(configFile);
         } catch (SettingsError ex) {
             System.out.println(ex.toString());
             System.exit(1);

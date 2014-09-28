@@ -19,8 +19,11 @@
 package net.oebs.jalos;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 import net.oebs.jalos.errors.SettingsError;
 import org.apache.logging.log4j.LogManager;
@@ -30,23 +33,36 @@ public class Settings {
 
     static final Logger log = LogManager.getLogger();
 
-    private final String filename = "jalos.properties";
+    private String filename;
     private final Properties properties = new Properties();
 
     private String dbLocation;
     private String httpHost;
     private int httpPort;
+    private URL httpHostUrl;
 
-    public Settings() throws SettingsError {
-        load();
+    public Settings(String configFile) throws SettingsError, FileNotFoundException {
+        this.filename = configFile;
+        log.info("Loading settings from %s", filename);
+        InputStream config = null;
+        try {
+            config = new FileInputStream(filename);
+        } catch (FileNotFoundException ex) {
+            throw new SettingsError(filename, ex);
+        }
+        load(config);
     }
 
-    private void load() throws SettingsError {
-        InputStream in = null;
+    public Settings(InputStream config) throws SettingsError {
+        load(config);
+    }
+
+    public Settings() {
+    }
+
+    private void load(InputStream config) throws SettingsError {
         try {
-            log.info("Loading settings from %s", filename);
-            in = new FileInputStream(filename);
-            properties.load(in);
+            properties.load(config);
 
             dbLocation = properties.getProperty("db.location");
             log.debug("db.location = %s", dbLocation);
@@ -57,12 +73,17 @@ public class Settings {
             httpHost = properties.getProperty("http.host");
             log.debug("http.host = %s", httpHost);
 
+            httpHostUrl = new URL(properties.getProperty("http.hostUrl"));
+            log.debug("http.hostUrl = %s", httpHostUrl);
+
+        } catch (MalformedURLException ex) {
+            throw new SettingsError(filename, ex);
         } catch (IOException ex) {
             throw new SettingsError(filename, ex);
         } finally {
-            if (in != null) {
+            if (config != null) {
                 try {
-                    in.close();
+                    config.close();
                 } catch (IOException ex) {
                 }
             }
@@ -74,11 +95,32 @@ public class Settings {
         return httpPort;
     }
 
+    public void setHttpPort(int port) {
+        this.httpPort = port;
+    }
+
     public String getHttpHost() {
         return httpHost;
+    }
+
+    public void setHttpHost(String host) {
+        this.httpHost = host;
+    }
+
+    public URL getHttpHostUrl() {
+        return httpHostUrl;
+    }
+
+    public void setHttpHostUrl(URL hostUrl) {
+        this.httpHostUrl = hostUrl;
     }
 
     public String getDbLocation() {
         return dbLocation;
     }
+
+    public void setDbLocation(String path) {
+        this.dbLocation = path;
+    }
+
 }

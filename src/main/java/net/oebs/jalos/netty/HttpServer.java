@@ -36,6 +36,7 @@ public class HttpServer {
     private final Backend db;
     private final Integer port;
     private final String host;
+    private final Settings settings;
 
     static final Logger log = LogManager.getLogger();
 
@@ -43,6 +44,7 @@ public class HttpServer {
         this.db = db;
         this.port = settings.getHttpPort();
         this.host = settings.getHttpHost();
+        this.settings = settings;
     }
 
     public void run() throws Exception {
@@ -54,7 +56,7 @@ public class HttpServer {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpInitializer(db));
+                    .childHandler(new HttpInitializer(db, settings));
             Channel ch = b.bind(host, port).sync().channel();
             log.info("Listening at http://%s:%d/", host, port);
             ch.closeFuture().sync();
