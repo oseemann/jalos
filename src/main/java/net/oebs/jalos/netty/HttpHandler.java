@@ -80,7 +80,8 @@ public class HttpHandler extends SimpleChannelInboundHandler {
     private Map<String, String> httpDataToStringMap(List<InterfaceHttpData> params) {
         Map<String, String> result = new HashMap<>();
         for (InterfaceHttpData param : params) {
-            result.put(param.getName(), param.toString());
+            String[] x = param.toString().split("=");
+            result.put(x[0], x[1]);
         }
         return result;
     }
