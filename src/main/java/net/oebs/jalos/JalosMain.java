@@ -26,13 +26,13 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class JalosMain {
 
     static final int PORT = 8080;
-    static final Logger log = LogManager.getLogger();
+    static final Logger log = LoggerFactory.getLogger(JalosMain.class);
 
     public static void main(String[] args) throws Exception {
         Options options = new Options();

@@ -28,8 +28,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpServer {
 
@@ -38,7 +38,7 @@ public class HttpServer {
     private final String host;
     private final Settings settings;
 
-    static final Logger log = LogManager.getLogger();
+    static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 
     public HttpServer(Backend db, Settings settings) {
         this.db = db;

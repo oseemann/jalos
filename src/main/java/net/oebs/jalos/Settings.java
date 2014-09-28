@@ -26,13 +26,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import net.oebs.jalos.errors.SettingsError;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Settings {
 
-    static final Logger log = LogManager.getLogger();
-
+    static final Logger log = LoggerFactory.getLogger(Settings.class);
     private String filename;
     private final Properties properties = new Properties();
 

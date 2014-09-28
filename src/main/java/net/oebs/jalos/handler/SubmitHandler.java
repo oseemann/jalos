@@ -31,13 +31,13 @@ import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
 import net.oebs.jalos.db.errors.BackendError;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SubmitHandler implements Handler {
 
     private final SubmitResponseObject sro;
-    private static final Logger logger = LogManager.getLogger(SubmitHandler.class.getName());
+    static final Logger log = LoggerFactory.getLogger(SubmitHandler.class);
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";
 
@@ -67,7 +67,7 @@ public class SubmitHandler implements Handler {
         try {
             json = mapper.writeValueAsString(sro);
         } catch (JsonProcessingException e) {
-            logger.error("JSON Error: {}", e);
+            log.error("JSON Error: {}", e);
             json = jsonErrorResponse;
         }
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK,

@@ -31,8 +31,8 @@ import java.io.File;
 import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.errors.BackendError;
 import net.oebs.jalos.db.errors.InitFailed;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BdbBackend implements Backend {
 
@@ -40,13 +40,13 @@ public class BdbBackend implements Backend {
     EntityStore store;
 
     private static final String idSequenceName = "idSeq";
-    private static final Logger log = LogManager.getLogger();
+    static final Logger log = LoggerFactory.getLogger(BdbBackend.class);
 
     public BdbBackend(Settings settings) throws BackendError {
         try {
             init(settings);
         } catch (DatabaseException e) {
-            log.fatal("Failed to initialize BDB: {}", e.toString());
+            log.error("Failed to initialize BDB: {}", e.toString());
             throw new InitFailed();
         }
     }
