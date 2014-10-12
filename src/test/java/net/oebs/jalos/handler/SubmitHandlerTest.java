@@ -24,6 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import net.oebs.jalos.RuntimeContext;
 import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
@@ -46,12 +47,13 @@ public class SubmitHandlerTest {
 
         Backend backend = mock(Backend.class);
         when(backend.store(any(Url.class))).thenReturn(u);
+        RuntimeContext.getInstance().setBackend(backend);
 
         Settings settings = new Settings();
         URL testUrl = new URL("http://w1.example.org/x1/");
         settings.setHttpHostUrl(testUrl);
 
-        SubmitHandler handler = new SubmitHandler(settings, backend, params);
+        SubmitHandler handler = new SubmitHandler(settings, params);
         FullHttpResponse response = handler.getResponse();
 
         String json = new String(response.content().array());

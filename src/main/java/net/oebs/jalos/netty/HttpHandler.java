@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.oebs.jalos.Settings;
-import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.handler.LookupHandler;
 import net.oebs.jalos.handler.SubmitHandler;
 import net.oebs.jalos.handler.errors.HandlerError;
@@ -51,11 +50,9 @@ import net.oebs.jalos.handler.errors.NotFound;
 
 public class HttpHandler extends SimpleChannelInboundHandler {
 
-    Backend db;
     Settings settings;
 
-    public HttpHandler(Backend db, Settings settings) {
-        this.db = db;
+    public HttpHandler(Settings settings) {
         this.settings = settings;
     }
 
@@ -92,7 +89,7 @@ public class HttpHandler extends SimpleChannelInboundHandler {
         if (method.equals(HttpMethod.POST)) {
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
             Map<String, String> params = httpDataToStringMap(decoder.getBodyHttpDatas());
-            response = new SubmitHandler(settings, db, params).getResponse();
+            response = new SubmitHandler(settings, params).getResponse();
         } else if (method.equals(HttpMethod.GET)) {
             response = badRequest();
         } else {
@@ -105,7 +102,7 @@ public class HttpHandler extends SimpleChannelInboundHandler {
     private FullHttpResponse handleLookup(FullHttpRequest request) {
         FullHttpResponse response;
         try {
-            response = new LookupHandler(db, request.getUri()).getResponse();
+            response = new LookupHandler(request.getUri()).getResponse();
         } catch (NotFound e) {
             response = notFound();
         } catch (HandlerError e) {

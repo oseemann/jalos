@@ -27,21 +27,18 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import net.oebs.jalos.Settings;
-import net.oebs.jalos.db.Backend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpServer {
 
-    private final Backend db;
     private final Integer port;
     private final String host;
     private final Settings settings;
 
     static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 
-    public HttpServer(Backend db, Settings settings) {
-        this.db = db;
+    public HttpServer(Settings settings) {
         this.port = settings.getHttpPort();
         this.host = settings.getHttpHost();
         this.settings = settings;
@@ -56,7 +53,7 @@ public class HttpServer {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpInitializer(db, settings));
+                    .childHandler(new HttpInitializer(settings));
             Channel ch = b.bind(host, port).sync().channel();
             log.info("Listening at http://%s:%d/", host, port);
             ch.closeFuture().sync();

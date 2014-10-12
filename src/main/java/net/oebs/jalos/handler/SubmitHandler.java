@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import io.netty.util.CharsetUtil;
 import java.util.Map;
+import net.oebs.jalos.RuntimeContext;
 import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
@@ -41,9 +42,10 @@ public class SubmitHandler implements Handler {
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";
 
-    public SubmitHandler(Settings settings, Backend db, Map<String, String> params) {
+    public SubmitHandler(Settings settings, Map<String, String> params) {
         Url url = new Url(params.get("url"));
         Url result = null;
+        Backend db = RuntimeContext.getInstance().getBackend();
         try {
             result = db.store(url);
         } catch (BackendError e) {
