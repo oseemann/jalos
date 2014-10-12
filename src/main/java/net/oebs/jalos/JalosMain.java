@@ -51,11 +51,15 @@ public final class JalosMain {
             System.exit(1);
         }
 
-        RuntimeContext ctx = RuntimeContext.getInstance();
         Backend db = new BdbBackend(settings);
-        ctx.setBackend(db);
         HttpServer server = new HttpServer(settings);
+
+        RuntimeContext ctx = RuntimeContext.getInstance();
+        ctx.setSettings(settings);
+        ctx.setBackend(db);
+
         server.run();
+
         db.shutdown();
     }
 }

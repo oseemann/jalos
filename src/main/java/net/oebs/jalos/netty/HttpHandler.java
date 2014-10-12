@@ -42,7 +42,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.oebs.jalos.Settings;
 import net.oebs.jalos.handler.LookupHandler;
 import net.oebs.jalos.handler.SubmitHandler;
 import net.oebs.jalos.handler.errors.HandlerError;
@@ -50,10 +49,7 @@ import net.oebs.jalos.handler.errors.NotFound;
 
 public class HttpHandler extends SimpleChannelInboundHandler {
 
-    Settings settings;
-
-    public HttpHandler(Settings settings) {
-        this.settings = settings;
+    public HttpHandler() {
     }
 
     private FullHttpResponse seeOther(String destinationUrl) {
@@ -89,7 +85,7 @@ public class HttpHandler extends SimpleChannelInboundHandler {
         if (method.equals(HttpMethod.POST)) {
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
             Map<String, String> params = httpDataToStringMap(decoder.getBodyHttpDatas());
-            response = new SubmitHandler(settings, params).getResponse();
+            response = new SubmitHandler(params).getResponse();
         } else if (method.equals(HttpMethod.GET)) {
             response = badRequest();
         } else {

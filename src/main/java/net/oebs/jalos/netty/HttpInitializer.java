@@ -24,14 +24,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
-import net.oebs.jalos.Settings;
 
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
-    Settings settings;
-
-    public HttpInitializer(Settings settings) {
-        this.settings = settings;
+    public HttpInitializer() {
     }
 
     @Override
@@ -40,6 +36,6 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new HttpRequestDecoder());
         p.addLast(new HttpResponseEncoder());
         p.addLast(new HttpObjectAggregator(1048576));
-        p.addLast(new HttpHandler(settings));
+        p.addLast(new HttpHandler());
     }
 }

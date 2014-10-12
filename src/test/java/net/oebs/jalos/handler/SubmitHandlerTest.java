@@ -47,13 +47,15 @@ public class SubmitHandlerTest {
 
         Backend backend = mock(Backend.class);
         when(backend.store(any(Url.class))).thenReturn(u);
-        RuntimeContext.getInstance().setBackend(backend);
 
         Settings settings = new Settings();
         URL testUrl = new URL("http://w1.example.org/x1/");
         settings.setHttpHostUrl(testUrl);
 
-        SubmitHandler handler = new SubmitHandler(settings, params);
+        RuntimeContext.getInstance().setBackend(backend);
+        RuntimeContext.getInstance().setSettings(settings);
+
+        SubmitHandler handler = new SubmitHandler(params);
         FullHttpResponse response = handler.getResponse();
 
         String json = new String(response.content().array());

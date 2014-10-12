@@ -24,7 +24,8 @@ public class RuntimeContext {
 
     private static RuntimeContext instance = null;
 
-    Backend db;
+    private Backend db;
+    private Settings settings;
 
     public RuntimeContext() {
     }
@@ -42,5 +43,13 @@ public class RuntimeContext {
 
     public Backend getBackend() {
         return this.db;
+    }
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+
+    public Settings getSettings() {
+        return this.settings;
     }
 }

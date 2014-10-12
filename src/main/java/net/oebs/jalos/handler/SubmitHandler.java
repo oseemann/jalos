@@ -42,10 +42,11 @@ public class SubmitHandler implements Handler {
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";
 
-    public SubmitHandler(Settings settings, Map<String, String> params) {
+    public SubmitHandler(Map<String, String> params) {
         Url url = new Url(params.get("url"));
         Url result = null;
         Backend db = RuntimeContext.getInstance().getBackend();
+        Settings settings = RuntimeContext.getInstance().getSettings();
         try {
             result = db.store(url);
         } catch (BackendError e) {

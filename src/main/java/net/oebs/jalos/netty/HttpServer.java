@@ -34,14 +34,12 @@ public class HttpServer {
 
     private final Integer port;
     private final String host;
-    private final Settings settings;
 
     static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 
     public HttpServer(Settings settings) {
         this.port = settings.getHttpPort();
         this.host = settings.getHttpHost();
-        this.settings = settings;
     }
 
     public void run() throws Exception {
@@ -53,7 +51,7 @@ public class HttpServer {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpInitializer(settings));
+                    .childHandler(new HttpInitializer());
             Channel ch = b.bind(host, port).sync().channel();
             log.info("Listening at http://%s:%d/", host, port);
             ch.closeFuture().sync();
