@@ -20,6 +20,8 @@ package net.oebs.jalos.handler;
 
 import io.netty.handler.codec.http.FullHttpResponse;
 import static io.netty.handler.codec.http.HttpResponseStatus.SEE_OTHER;
+import java.util.HashMap;
+import java.util.Map;
 import net.oebs.jalos.RuntimeContext;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
@@ -41,8 +43,9 @@ public class LookupHandlerTest {
         Url url = new Url("http://www.example.org/test1");
         when(backend.lookup(id)).thenReturn(url);
 
-        LookupHandler handler = new LookupHandler("/a/12345");
-        FullHttpResponse response = handler.getResponse();
+        LookupHandler handler = new LookupHandler();
+        Map<String, String> params = new HashMap<>();
+        FullHttpResponse response = handler.handleGet("/a/12345", params);
 
         verify(backend).lookup(id);
         assertEquals(response.getStatus(), SEE_OTHER);
@@ -51,7 +54,7 @@ public class LookupHandlerTest {
 
     @Test(expected = NotFound.class)
     public void testGetResponseWithInvalidUrl() throws HandlerError {
-        new LookupHandler("/a/invalid");
+        new LookupHandler().handleGet("/a/invalid", null);
     }
 
 }

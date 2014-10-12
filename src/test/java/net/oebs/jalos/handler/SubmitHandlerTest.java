@@ -55,8 +55,8 @@ public class SubmitHandlerTest {
         RuntimeContext.getInstance().setBackend(backend);
         RuntimeContext.getInstance().setSettings(settings);
 
-        SubmitHandler handler = new SubmitHandler(params);
-        FullHttpResponse response = handler.getResponse();
+        SubmitHandler handler = new SubmitHandler();
+        FullHttpResponse response = handler.handlePost("", params);
 
         String json = new String(response.content().array());
         ObjectMapper mapper = new ObjectMapper();

@@ -32,17 +32,25 @@ import net.oebs.jalos.Settings;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
 import net.oebs.jalos.db.errors.BackendError;
+import net.oebs.jalos.handler.errors.BadRequest;
+import net.oebs.jalos.handler.errors.HandlerError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SubmitHandler implements Handler {
+public class SubmitHandler extends Handler {
 
-    private final SubmitResponseObject sro;
+    private SubmitResponseObject sro;
     static final Logger log = LoggerFactory.getLogger(SubmitHandler.class);
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";
 
-    public SubmitHandler(Map<String, String> params) {
+    @Override
+    public FullHttpResponse handleGet(String uri, Map<String, String> params) throws HandlerError {
+        throw new BadRequest();
+    }
+
+    @Override
+    public FullHttpResponse handlePost(String uri, Map<String, String> params) {
         Url url = new Url(params.get("url"));
         Url result = null;
         Backend db = RuntimeContext.getInstance().getBackend();
@@ -50,6 +58,7 @@ public class SubmitHandler implements Handler {
         try {
             result = db.store(url);
         } catch (BackendError e) {
+            // TODO
         }
 
         sro = new SubmitResponseObject();
@@ -61,10 +70,7 @@ public class SubmitHandler implements Handler {
         } else {
             sro.status = "ERROR";
         }
-    }
 
-    @Override
-    public FullHttpResponse getResponse() {
         ObjectMapper mapper = new ObjectMapper();
         String json;
         try {

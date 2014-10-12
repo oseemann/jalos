@@ -24,20 +24,23 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.LOCATION;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.SEE_OTHER;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import java.util.Map;
 import net.oebs.jalos.RuntimeContext;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.Url;
+import net.oebs.jalos.handler.errors.BadRequest;
 import net.oebs.jalos.handler.errors.HandlerError;
 import net.oebs.jalos.handler.errors.NotFound;
 
-public class LookupHandler implements Handler {
+public class LookupHandler extends Handler {
 
-    Url result = null;
+    @Override
+    public FullHttpResponse handleGet(String uri, Map<String, String> params) throws HandlerError {
 
-    public LookupHandler(String uri) throws HandlerError {
         Backend db = RuntimeContext.getInstance().getBackend();
         assert (uri.startsWith("/a/"));
         String id_param = uri.substring(3);
+
         Long id;
         try {
             id = Long.parseLong(id_param);
@@ -45,15 +48,13 @@ public class LookupHandler implements Handler {
             throw new NotFound();
         }
 
+        Url result = null;
         try {
             result = db.lookup(id);
         } catch (Exception e) {
             throw new NotFound();
         }
-    }
 
-    @Override
-    public FullHttpResponse getResponse() {
         FullHttpResponse response;
         if (result != null) {
             response = new DefaultFullHttpResponse(HTTP_1_1, SEE_OTHER);
@@ -61,6 +62,12 @@ public class LookupHandler implements Handler {
         } else {
             response = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND);
         }
+
         return response;
+    }
+
+    @Override
+    public FullHttpResponse handlePost(String uri, Map<String, String> params) throws HandlerError {
+        throw new BadRequest();
     }
 }

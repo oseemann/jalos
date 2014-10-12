@@ -22,7 +22,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
@@ -42,15 +41,14 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.oebs.jalos.handler.Handler;
 import net.oebs.jalos.handler.LookupHandler;
 import net.oebs.jalos.handler.SubmitHandler;
+import net.oebs.jalos.handler.errors.BadRequest;
 import net.oebs.jalos.handler.errors.HandlerError;
 import net.oebs.jalos.handler.errors.NotFound;
 
 public class HttpHandler extends SimpleChannelInboundHandler {
-
-    public HttpHandler() {
-    }
 
     private FullHttpResponse seeOther(String destinationUrl) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, SEE_OTHER);
@@ -79,52 +77,61 @@ public class HttpHandler extends SimpleChannelInboundHandler {
         return result;
     }
 
-    private FullHttpResponse handleSubmit(FullHttpRequest request) {
-        FullHttpResponse response;
-        HttpMethod method = request.getMethod();
-        if (method.equals(HttpMethod.POST)) {
-            HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
-            Map<String, String> params = httpDataToStringMap(decoder.getBodyHttpDatas());
-            response = new SubmitHandler(params).getResponse();
-        } else if (method.equals(HttpMethod.GET)) {
-            response = badRequest();
-        } else {
-            response = badRequest();
-        }
-
-        return response;
-    }
-
-    private FullHttpResponse handleLookup(FullHttpRequest request) {
-        FullHttpResponse response;
-        try {
-            response = new LookupHandler(request.getUri()).getResponse();
-        } catch (NotFound e) {
-            response = notFound();
-        } catch (HandlerError e) {
-            response = internalError();
-        }
-        return response;
-    }
-
     private FullHttpResponse handleRequest(HttpRequest request) {
 
         FullHttpResponse response = null;
         String uri = request.getUri();
 
+        // map URL to Handler class
+        Class cls = null;
         if (uri.compareTo("/a/submit") == 0) {
-            response = handleSubmit((FullHttpRequest) request);
+            cls = SubmitHandler.class;
         } else if (uri.startsWith("/a/")) {
-            response = handleLookup((FullHttpRequest) request);
-        } else if (uri.compareTo("/status") == 0) {
-        } else {
-            response = notFound();
+            cls = LookupHandler.class;
         }
+
+        // no matching handler == 404
+        if (cls == null) {
+            return notFound();
+        }
+
+        Handler h;
+        try {
+            h = (Handler) cls.newInstance();
+        } catch (InstantiationException | IllegalAccessException ex) {
+            return internalError();
+        }
+
+        Map<String, String> params = null;
+        HttpMethod method = request.getMethod();
+
+        // dispatch based on request method
+        try {
+            if (method.equals(HttpMethod.POST)) {
+                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(new DefaultHttpDataFactory(false), request);
+                params = httpDataToStringMap(decoder.getBodyHttpDatas());
+                response = h.handlePost(uri, params);
+            } else if (method.equals(HttpMethod.GET)) {
+                params = new HashMap<>();
+                response = h.handleGet(uri, params);
+            } else {
+                response = badRequest();
+            }
+
+        } catch (BadRequest ex) {
+            response = badRequest();
+        } catch (NotFound ex) {
+            response = notFound();
+        } catch (HandlerError ex) {
+            response = internalError();
+        }
+
         return response;
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg
+    ) {
         if (!(msg instanceof HttpRequest)) {
             return;
         }
@@ -140,12 +147,14 @@ public class HttpHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) {
+    public void channelReadComplete(ChannelHandlerContext ctx
+    ) {
         ctx.flush();
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause
+    ) {
         cause.printStackTrace();
         ctx.close();
     }

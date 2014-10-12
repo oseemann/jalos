@@ -16,16 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Jalos.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.oebs.jalos.handler;
+package net.oebs.jalos.handler.errors;
 
-import io.netty.handler.codec.http.FullHttpResponse;
-import java.util.Map;
-import net.oebs.jalos.handler.errors.HandlerError;
-
-public abstract class Handler {
-
-    public abstract FullHttpResponse handleGet(String uri, Map<String, String> params) throws HandlerError;
-
-    public abstract FullHttpResponse handlePost(String uri, Map<String, String> params) throws HandlerError;
+public class BadRequest extends HandlerError {
 
 }
