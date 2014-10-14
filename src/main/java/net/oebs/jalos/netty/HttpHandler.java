@@ -38,6 +38,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +49,28 @@ import net.oebs.jalos.handler.SubmitHandler;
 import net.oebs.jalos.handler.errors.BadRequest;
 import net.oebs.jalos.handler.errors.HandlerError;
 import net.oebs.jalos.handler.errors.NotFound;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpHandler extends SimpleChannelInboundHandler {
+
+    static final Logger log = LoggerFactory.getLogger(HttpHandler.class);
+
+    private static class Route {
+
+        public final String path;
+        public final Class handler;
+
+        public Route(String path, Class handler) {
+            this.path = path;
+            this.handler = handler;
+        }
+    }
+
+    private final static List<Route> routes = new ArrayList<>(Arrays.asList(
+            new Route("/a/submit", SubmitHandler.class),
+            new Route("/a/\\d+", LookupHandler.class)
+    ));
 
     private FullHttpResponse seeOther(String destinationUrl) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, SEE_OTHER);
@@ -82,16 +104,18 @@ public class HttpHandler extends SimpleChannelInboundHandler {
         FullHttpResponse response = null;
         String uri = request.getUri();
 
-        // map URL to Handler class
+        // lookup Handler class by URL
         Class cls = null;
-        if (uri.compareTo("/a/submit") == 0) {
-            cls = SubmitHandler.class;
-        } else if (uri.startsWith("/a/")) {
-            cls = LookupHandler.class;
+        for (Route route : routes) {
+            if (uri.matches(route.path)) {
+                cls = route.handler;
+                break;
+            }
         }
 
         // no matching handler == 404
         if (cls == null) {
+            log.info("No handler match found for uri %s", uri);
             return notFound();
         }
 
