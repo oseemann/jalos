@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 public class SubmitHandler extends Handler {
 
-    private SubmitResponseObject sro;
     static final Logger log = LoggerFactory.getLogger(SubmitHandler.class);
 
     private final String jsonErrorResponse = "{\"status\": \"INTERNAL_ERROR\"}";
@@ -61,7 +60,7 @@ public class SubmitHandler extends Handler {
             // TODO
         }
 
-        sro = new SubmitResponseObject();
+        SubmitResponseObject sro = new SubmitResponseObject();
         if (result != null) {
             sro.status = "SUCCESS";
             sro.id = result.getId();

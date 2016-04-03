@@ -18,48 +18,70 @@
  */
 package net.oebs.jalos;
 
+import java.io.FileNotFoundException;
 import net.oebs.jalos.db.Backend;
 import net.oebs.jalos.db.BdbBackend;
+import net.oebs.jalos.db.errors.BackendError;
 import net.oebs.jalos.errors.SettingsError;
 import net.oebs.jalos.netty.HttpServer;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class JalosMain {
 
-    static final int PORT = 8080;
     static final Logger log = LoggerFactory.getLogger(JalosMain.class);
 
-    public static void main(String[] args) throws Exception {
+    private static Settings createSettings(String[] args) throws SettingsError {
         Options options = new Options();
         options.addOption("c", "config", true, "config file path");
 
         CommandLineParser parser = new BasicParser();
-        CommandLine cmd = parser.parse(options, args);
+        try {
+            CommandLine cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            // TODO
+        }
 
         String configFile = options.getOption("c").getValue("jalos.properties");
         Settings settings = null;
 
         try {
             settings = new Settings(configFile);
+        } catch (FileNotFoundException e) {
+            // TODO
+        }
+        return settings;
+    }
+
+    public static void runServer(Settings settings) throws BackendError, Exception {
+        Backend db = new BdbBackend(settings);
+        HttpServer server = new HttpServer(settings);
+
+        RuntimeContext ctx = RuntimeContext.getInstance();
+
+        ctx.setSettings(settings);
+
+        ctx.setBackend(db);
+
+        server.run();
+        db.shutdown();
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        Settings settings = null;
+        try {
+            settings = createSettings(args);
         } catch (SettingsError ex) {
             System.out.println(ex.toString());
             System.exit(1);
         }
 
-        Backend db = new BdbBackend(settings);
-        HttpServer server = new HttpServer(settings);
-
-        RuntimeContext ctx = RuntimeContext.getInstance();
-        ctx.setSettings(settings);
-        ctx.setBackend(db);
-
-        server.run();
-
-        db.shutdown();
+        runServer(settings);
     }
 }
