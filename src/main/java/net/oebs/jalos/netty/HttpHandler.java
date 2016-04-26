@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.oebs.jalos.handler.Handler;
+import net.oebs.jalos.handler.IndexHandler;
 import net.oebs.jalos.handler.LookupHandler;
 import net.oebs.jalos.handler.SubmitHandler;
 import net.oebs.jalos.handler.errors.BadRequest;
@@ -69,6 +70,8 @@ public class HttpHandler extends SimpleChannelInboundHandler {
 
     private final static List<Route> routes = new ArrayList<>(Arrays.asList(
             new Route("/a/submit", SubmitHandler.class),
+            new Route("/a/", IndexHandler.class),
+            new Route("/a/static/.*", IndexHandler.class),
             new Route("/a/\\d+", LookupHandler.class)
     ));
 
@@ -154,8 +157,7 @@ public class HttpHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, Object msg
-    ) {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
         if (!(msg instanceof HttpRequest)) {
             return;
         }
@@ -171,14 +173,12 @@ public class HttpHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx
-    ) {
+    public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause
-    ) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
     }

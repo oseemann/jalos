@@ -27,9 +27,6 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
 
-    public HttpInitializer() {
-    }
-
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
