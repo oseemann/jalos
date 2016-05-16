@@ -80,6 +80,7 @@ public class SubmitHandler extends Handler {
         }
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK,
                 Unpooled.copiedBuffer(json, CharsetUtil.UTF_8));
+        response.headers().set("Content-Type", "application/json");
         return response;
     }
 

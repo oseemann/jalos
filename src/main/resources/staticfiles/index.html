@@ -2,13 +2,47 @@
 
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="static/jalos.css">
-        <script src="static/jalos.js"></script>
-        <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>JALOS Url Shortener</title>
+        <link rel="stylesheet" type="text/css" href="static/jalos.css">
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+        <script src="static/jalos.js"></script>
+        <script type="application/javascript">
+        $(document).ready(function() {
+            $("#go").click(function() {
+                var onSuccess = function(data, status, xhr) {
+                    $("#resultbox .url").text(data.url);
+                    $("#resultbox").show();
+                };
+                var onError = function() {
+                    $("#errorbox").show();
+                };
+                var url = $("#urlinput")[0].value;
+
+                $.ajax("/a/submit", {
+                    method: "POST",
+                    data: {"url": url},
+                    success: onSuccess,
+                    error: onError
+                });
+            });
+        });
+        </script>
     </head>
     <body>
-        <div>TODO write content</div>
+        <h1>JALOS Url Shortener</h1>
+        <div>
+            URL: <input type="text" size="60" id="urlinput">
+            <button id="go">Go</button>
+        </div>
+        <div>
+            <p id="resultbox" style="display:none">
+                URL: <span class="url">foo</span>
+            </p>
+            <p id="errorbox" style="display:none">
+                ERROR
+            </p>
+        </div>
     </body>
 </html>
