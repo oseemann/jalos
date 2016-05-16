@@ -46,6 +46,7 @@ import java.util.Map;
 import net.oebs.jalos.handler.Handler;
 import net.oebs.jalos.handler.IndexHandler;
 import net.oebs.jalos.handler.LookupHandler;
+import net.oebs.jalos.handler.RedirectHandler;
 import net.oebs.jalos.handler.SubmitHandler;
 import net.oebs.jalos.handler.errors.BadRequest;
 import net.oebs.jalos.handler.errors.HandlerError;
@@ -72,7 +73,13 @@ public class HttpHandler extends SimpleChannelInboundHandler {
             new Route("/a/submit", SubmitHandler.class),
             new Route("/a/", IndexHandler.class),
             new Route("/a/static/.*", IndexHandler.class),
-            new Route("/a/\\d+", LookupHandler.class)
+            new Route("/a/\\d+", LookupHandler.class),
+            new Route("/", (new RedirectHandler() {
+                {
+                    location = "/a/";
+                    status = SEE_OTHER;
+                }
+            }).getClass())
     ));
 
     private FullHttpResponse seeOther(String destinationUrl) {

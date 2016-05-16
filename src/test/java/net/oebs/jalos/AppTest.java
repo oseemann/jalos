@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import net.oebs.jalos.handler.SubmitResponseObject;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -62,6 +63,10 @@ public class AppTest {
         Thread.sleep(1000);
 
         Client client = new Client("http://localhost:16801");
+
+        HttpResponse resp = client.xget("/");
+        assertEquals("HTTP/1.1 303 See Other", resp.getStatusLine().toString());
+        assertEquals("/a/", resp.getFirstHeader("Location").getValue());
 
         SubmitResponseObject sro = null;
         String testUrl;

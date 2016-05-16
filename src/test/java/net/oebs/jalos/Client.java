@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.oebs.jalos.handler.SubmitResponseObject;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,6 +30,12 @@ public class Client {
     Client(String serviceUrl) {
         httpClient = HttpClients.createMinimal();
         this.serviceUrl = serviceUrl;
+    }
+
+    public HttpResponse xget(String url) throws IOException {
+        HttpGet httpGet = new HttpGet(this.serviceUrl + url);
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+        return response;
     }
 
     public String get(long id) throws IOException {
