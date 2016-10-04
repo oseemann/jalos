@@ -30,7 +30,7 @@ public class SettingsError extends Exception {
 
     @Override
     public String toString() {
-        return String.format("Failed to load settings from '%s': %s",
+        return String.format("Failed to load settings from '{}': {}",
                 filename, error);
     }
 }

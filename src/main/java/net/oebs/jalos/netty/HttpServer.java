@@ -53,7 +53,7 @@ public class HttpServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new HttpInitializer());
             Channel ch = b.bind(host, port).sync().channel();
-            log.info("Listening at http://%s:%d/", host, port);
+            log.info("Listening at http://{}:{}/", host, port);
             ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();

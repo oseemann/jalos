@@ -125,7 +125,7 @@ public class HttpHandler extends SimpleChannelInboundHandler {
 
         // no matching handler == 404
         if (cls == null) {
-            log.info("No handler match found for uri %s", uri);
+            log.info("No handler match found for uri {}", uri);
             return notFound();
         }
 

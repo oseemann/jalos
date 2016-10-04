@@ -42,7 +42,7 @@ public class Settings {
 
     public Settings(String configFile) throws SettingsError, FileNotFoundException {
         this.filename = configFile;
-        log.info("Loading settings from %s", filename);
+        log.info("Loading settings from '{}'", filename);
         InputStream config = null;
         try {
             config = new FileInputStream(filename);
@@ -64,16 +64,16 @@ public class Settings {
             properties.load(config);
 
             dbLocation = properties.getProperty("db.location");
-            log.debug("db.location = %s", dbLocation);
+            log.debug("db.location = '{}'", dbLocation);
 
             httpPort = Integer.parseInt(properties.getProperty("http.port"));
-            log.debug("http.port = %s", httpPort);
+            log.debug("http.port = {}", httpPort);
 
             httpHost = properties.getProperty("http.host");
-            log.debug("http.host = %s", httpHost);
+            log.debug("http.host = '{}'", httpHost);
 
             httpHostUrl = new URL(properties.getProperty("http.hostUrl"));
-            log.debug("http.hostUrl = %s", httpHostUrl);
+            log.debug("http.hostUrl = '{}'", httpHostUrl);
 
         } catch (MalformedURLException ex) {
             throw new SettingsError(filename, ex);
